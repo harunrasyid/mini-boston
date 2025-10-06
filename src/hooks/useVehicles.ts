@@ -10,7 +10,7 @@ export function useVehicles() {
       return res.data.data;
     },
     refetchOnWindowFocus: false,
-    refetchInterval: 3000,
+    refetchInterval: 1000,
   });
 
   return {
