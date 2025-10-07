@@ -3,12 +3,17 @@ import { useMap } from "./hooks/useMap";
 import { styles } from "./Map.style";
 import type { IMapProps } from "./Map.props";
 import { useEffect } from "react";
-import { ScatterplotLayer } from "deck.gl";
+import { PathLayer, ScatterplotLayer } from "deck.gl";
 import type { IVehicle } from "@/types/vehicle";
 
-export const Map = ({ vehicles = [] }: IMapProps) => {
-  console.log(vehicles);
+export const Map = ({ vehicles = [], shapes = [] }: IMapProps) => {
   const { mapContainer, overlayRef } = useMap();
+
+  console.log("shapes", shapes);
+
+  function swapLatLong(arr: [number, number][]): [number, number][] {
+    return arr.map(([lat, long]) => [long, lat]);
+  }
 
   useEffect(() => {
     if (mapContainer.current && overlayRef.current && vehicles) {
@@ -30,11 +35,22 @@ export const Map = ({ vehicles = [] }: IMapProps) => {
         lineWidthMinPixels: 1,
       });
 
+      const layer = new PathLayer({
+        id: "route",
+        data: shapes,
+        getPath: (d) => {
+          console.log("d", swapLatLong(d.coor));
+          return swapLatLong(d.coor);
+        },
+        widthMinPixels: 2,
+        getColor: [255, 0, 0],
+      });
+
       overlayRef.current.setProps({
-        layers: [vehicleLayer],
+        layers: [layer, vehicleLayer],
       });
     }
-  }, [vehicles, mapContainer, overlayRef]);
+  }, [vehicles, mapContainer, overlayRef, shapes]);
 
   return <div ref={mapContainer} style={styles.map} />;
 };
